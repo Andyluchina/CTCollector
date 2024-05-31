@@ -215,6 +215,8 @@ func ExecuteCurrentTask(collector *Collector) error {
 		Auditor: datastruct.AuditorReport{},
 	})
 
+	collector.RunningInstances = []string{}
+
 	fmt.Print("Executing a new task ")
 	fmt.Println(collector.RunTasks[collector.CurrentTask])
 	auditor_ip := SpawnAuditor(collector)

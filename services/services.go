@@ -86,14 +86,13 @@ func SpawnClients(collector *Collector, client_count string, server_ip string, c
 
 	client_script_user_data := fmt.Sprintf(`#!/bin/bash
 	sudo su
+	cd ~
 	wget https://go.dev/dl/go1.22.3.linux-amd64.tar.gz
 	rm -rf /usr/local/go && tar -C /usr/local -xzf go1.22.3.linux-amd64.tar.gz
-	echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee -a /etc/profile
-	source /etc/profile
 	yum install git -y
 	git clone https://github.com/Andyluchina/CTClient
 	cd CTClient
-	go build main.go
+	/usr/local/go/bin/go build main.go
 	./main %s %s %s`, server_ip, strconv.Itoa(reveal), collector_ip)
 
 	userDataEncoded := base64.StdEncoding.EncodeToString([]byte(client_script_user_data))

@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 type Collector struct {
@@ -19,6 +20,7 @@ type Collector struct {
 	CurrentTask      int
 	RunningInstances []string
 	KeyName          string
+	CollectorIP      string
 	mu               sync.Mutex
 }
 
@@ -113,6 +115,89 @@ func SpawnClients(collector *Collector, client_count string, server_ip string, c
 	return nil
 }
 
+func SpawnAuditor(collector *Collector) string {
+	region := "us-east-1"
+	instanceType := "t2.micro"
+	securityGroupID := "sg-03c26d167c72f8254"
+
+	// Get the latest Amazon Linux 2 AMI ID using a custom function that wraps AWS CLI calls
+	amiID, err := awsCLI("ec2", "describe-images", "--owners", "amazon",
+		"--filters", "Name=name,Values=amzn2-ami-hvm-*-x86_64-gp2",
+		"Name=state,Values=available",
+		"--query", "Images | sort_by(@, &CreationDate) | [-1].ImageId",
+		"--output", "text", "--region", region)
+	if err != nil {
+		fmt.Println("Error getting AMI ID:", err)
+		panic(err)
+	}
+	amiID = strings.TrimSpace(amiID)
+
+	// Find the default subnet in the first available zone
+	subnetID, err := awsCLI("ec2", "describe-subnets", "--filters", "Name=default-for-az,Values=true",
+		"--query", "Subnets[0].SubnetId", "--output", "text", "--region", region)
+	if err != nil {
+		fmt.Println("Error getting subnet ID:", err)
+		panic(err)
+	}
+	subnetID = strings.TrimSpace(subnetID)
+
+	// Prepare user data script for the instances
+	userData := fmt.Sprintf(`#!/bin/bash
+	sudo yum install -y git
+	git clone https://github.com/Andyluchina/CTAuditor
+	cd CTAuditor
+	./main %s %s %s %s`, strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].TotalClients)), strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].MaxSitOut)), "80", collector.CollectorIP)
+	userDataEncoded := base64.StdEncoding.EncodeToString([]byte(userData))
+
+	// Start EC2 instances
+	launchOutput, err := awsCLI("ec2", "run-instances",
+		"--image-id", amiID,
+		"--instance-type", instanceType,
+		"--count", strconv.Itoa(1),
+		"--key-name", collector.KeyName,
+		"--security-group-ids", securityGroupID,
+		"--subnet-id", subnetID,
+		"--user-data", userDataEncoded,
+		"--region", region,
+		"--query", "Instances[0].NetworkInterfaces[0].Association.PublicIp",
+		"--output", "text")
+	if err != nil {
+		fmt.Println("Error launching instances:", err)
+		panic(err)
+	}
+	publicIP := strings.TrimSpace(launchOutput)
+	fmt.Printf("Launched the Auditor with Public IP: %s\n", publicIP)
+
+	collector.RunningInstances = append(collector.RunningInstances, publicIP)
+	return publicIP
+}
+
+func ExecuteCurrentTask(collector *Collector) error {
+
+	collector.RunStats = append(collector.RunStats, datastruct.TestRun{
+		Clients: []datastruct.ClientStats{},
+		Auditor: datastruct.AuditorReport{},
+	})
+
+	fmt.Print("Executing a new task ")
+	fmt.Println(collector.RunTasks[collector.CurrentTask])
+	auditor_ip := SpawnAuditor(collector)
+
+	time.Sleep(20 * time.Second)
+	total_clients := collector.RunTasks[collector.CurrentTask].TotalClients
+	sitout := collector.RunTasks[collector.CurrentTask].MaxSitOut
+	err := SpawnClients(collector, strconv.Itoa(int(total_clients-sitout)), auditor_ip, collector.CollectorIP, 1)
+	if err != nil {
+		panic(err)
+	}
+	err = SpawnClients(collector, strconv.Itoa(int(sitout)), auditor_ip, collector.CollectorIP, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	return nil
+}
+
 func Cleanup(collector *Collector) error {
 	// Terminate instances
 	fmt.Println("Terminating instances...")
@@ -156,6 +241,20 @@ func (collector *Collector) ReportStatsClient(req *datastruct.ClientStats, reply
 	fmt.Println("Client Report Received")
 	collector.RunStats[collector.CurrentTask].Clients = append(collector.RunStats[collector.CurrentTask].Clients, *req)
 	reply.Status = true
+
+	if len(collector.RunStats[collector.CurrentTask].Clients) == int(collector.RunTasks[collector.CurrentTask].TotalClients) && collector.RunStats[collector.CurrentTask].Auditor.TotalClients != 0 {
+		// write collected data to a file
+		WriteRevealInfoToDatabase(collector.RunStats)
+		Cleanup(collector)
+
+		if collector.CurrentTask == len(collector.RunTasks)-1 {
+			// all task completed
+			// exit
+		} else {
+			collector.CurrentTask += 1
+			ExecuteCurrentTask(collector)
+		}
+	}
 	return nil
 }
 
@@ -166,9 +265,19 @@ func (collector *Collector) ReportStatsAuditor(req *datastruct.AuditorReport, re
 	collector.RunStats[collector.CurrentTask].Auditor = *req
 	reply.Status = true
 
-	// write collected data to a file
-	WriteRevealInfoToDatabase(collector.RunStats)
-	Cleanup(collector)
+	if len(collector.RunStats[collector.CurrentTask].Clients) == int(collector.RunTasks[collector.CurrentTask].TotalClients) {
+		// write collected data to a file
+		WriteRevealInfoToDatabase(collector.RunStats)
+		Cleanup(collector)
+
+		if collector.CurrentTask == len(collector.RunTasks)-1 {
+			// all task completed
+			// exit
+		} else {
+			collector.CurrentTask += 1
+			ExecuteCurrentTask(collector)
+		}
+	}
 	return nil
 }
 

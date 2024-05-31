@@ -50,7 +50,7 @@ func main() {
 	Collector.RunStats = []datastruct.TestRun{}
 	Collector.RunTasks = run_tasks
 	Collector.CurrentTask = 0
-	Collector_ip := string(ip)
+	Collector.CollectorIP = string(ip)
 	Collector.RunningInstances = []string{}
 	keyName := "EC2KeyPair-" + time.Now().Format("20060102150405")
 	region := "us-east-1"
@@ -74,13 +74,10 @@ func main() {
 	}
 	log.Printf("Serving RPC server on port " + port)
 	// starts up the current task
-	server_ip := "18.234.214.33:80"
-	Collector.RunStats = append(Collector.RunStats, datastruct.TestRun{
-		Clients: []datastruct.ClientStats{},
-		Auditor: datastruct.AuditorReport{},
-	})
-	services.SpawnClients(Collector, "9", server_ip, Collector_ip+":80", 1)
-	services.SpawnClients(Collector, "1", server_ip, Collector_ip+":80", 0)
+	// server_ip := "18.234.214.33:80"
+	services.ExecuteCurrentTask(Collector)
+	// services.SpawnClients(Collector, "9", server_ip, Collector_ip+":80", 1)
+	// services.SpawnClients(Collector, "1", server_ip, Collector_ip+":80", 0)
 	http.Serve(listener, nil)
 
 }

@@ -75,6 +75,10 @@ func main() {
 	log.Printf("Serving RPC server on port " + port)
 	// starts up the current task
 	server_ip := "18.234.214.33:80"
+	Collector.RunStats = append(Collector.RunStats, datastruct.TestRun{
+		Clients: []datastruct.ClientStats{},
+		Auditor: datastruct.AuditorReport{},
+	})
 	services.SpawnClients(Collector, "9", server_ip, Collector_ip+":80", 1)
 	services.SpawnClients(Collector, "1", server_ip, Collector_ip+":80", 0)
 	http.Serve(listener, nil)

@@ -178,7 +178,7 @@ func SpawnAuditor(collector *Collector) string {
 			}
 			if ip != "" {
 				fmt.Println("Public IP found:", ip)
-				return ip
+				return ip + ":80"
 			}
 			fmt.Println("Public IP not available yet, retrying...")
 		}

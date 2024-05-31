@@ -92,6 +92,7 @@ func SpawnClients(collector *Collector, client_count string, server_ip string, c
 	yum install git -y
 	git clone https://github.com/Andyluchina/CTClient
 	cd CTClient
+	export PATH=$PATH:/usr/local/go/bin
 	go build main.go
 	./main %s %s %s`, server_ip, strconv.Itoa(reveal), collector_ip)
 

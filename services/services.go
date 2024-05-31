@@ -57,7 +57,7 @@ func extractInstanceIDsFromJSON(jsonData string) ([]string, error) {
 
 func SpawnClients(collector *Collector, client_count string, server_ip string, collector_ip string, reveal int) error {
 	region := "us-east-1"
-	instanceType := "t2.micro"
+	instanceType := "t2.nano"
 	securityGroupID := "sg-03c26d167c72f8254"
 	count := client_count
 
@@ -87,11 +87,9 @@ func SpawnClients(collector *Collector, client_count string, server_ip string, c
 	client_script_user_data := fmt.Sprintf(`#!/bin/bash
 	sudo su
 	cd ~
-	yum install go -y
 	yum install git -y
 	git clone https://github.com/Andyluchina/CTClient
 	cd CTClient
-	go build main.go
 	./main %s %s %s`, server_ip, strconv.Itoa(reveal), collector_ip)
 
 	userDataEncoded := base64.StdEncoding.EncodeToString([]byte(client_script_user_data))

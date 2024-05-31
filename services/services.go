@@ -244,15 +244,6 @@ func Cleanup(collector *Collector) error {
 	}
 	fmt.Println("Instances terminated.")
 
-	// Delete the key pair
-	fmt.Println("Deleting key pair...")
-	if _, err := awsCLI("ec2", "delete-key-pair", "--key-name", collector.KeyName, "--region", "us-east-1"); err != nil {
-		fmt.Println("Error deleting key pair:", err)
-		return err
-	}
-	os.Remove(collector.KeyName + ".pem")
-	fmt.Println("Key pair deleted.")
-
 	fmt.Println("Script completed.")
 	return nil
 }
@@ -286,6 +277,14 @@ func (collector *Collector) ReportStatsClient(req *datastruct.ClientStats, reply
 		if collector.CurrentTask == len(collector.RunTasks)-1 {
 			// all task completed
 			// exit
+			//Delete the key pair
+			fmt.Println("Deleting key pair...")
+			if _, err := awsCLI("ec2", "delete-key-pair", "--key-name", collector.KeyName, "--region", "us-east-1"); err != nil {
+				fmt.Println("Error deleting key pair:", err)
+				return err
+			}
+			os.Remove(collector.KeyName + ".pem")
+			fmt.Println("Key pair deleted.")
 		} else {
 			collector.CurrentTask += 1
 			ExecuteCurrentTask(collector)
@@ -309,6 +308,14 @@ func (collector *Collector) ReportStatsAuditor(req *datastruct.AuditorReport, re
 		if collector.CurrentTask == len(collector.RunTasks)-1 {
 			// all task completed
 			// exit
+			//Delete the key pair
+			fmt.Println("Deleting key pair...")
+			if _, err := awsCLI("ec2", "delete-key-pair", "--key-name", collector.KeyName, "--region", "us-east-1"); err != nil {
+				fmt.Println("Error deleting key pair:", err)
+				return err
+			}
+			os.Remove(collector.KeyName + ".pem")
+			fmt.Println("Key pair deleted.")
 		} else {
 			collector.CurrentTask += 1
 			ExecuteCurrentTask(collector)

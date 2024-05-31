@@ -88,7 +88,7 @@ func SpawnClients(collector *Collector, client_count string, server_ip string, c
 	sudo su
 	wget https://go.dev/dl/go1.22.3.linux-amd64.tar.gz
 	rm -rf /usr/local/go && tar -C /usr/local -xzf go1.22.3.linux-amd64.tar.gz
-	export PATH=$PATH:/usr/local/go/bin
+	echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee -a /etc/profile
 	yum install git -y
 	git clone https://github.com/Andyluchina/CTClient
 	cd CTClient

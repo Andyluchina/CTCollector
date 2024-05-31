@@ -2,6 +2,7 @@ package services
 
 import (
 	"CTCollector/datastruct"
+	"bufio"
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
@@ -150,26 +151,61 @@ func SpawnAuditor(collector *Collector) string {
 	userDataEncoded := base64.StdEncoding.EncodeToString([]byte(userData))
 
 	// Start EC2 instances
-	launchOutput, err := awsCLI("ec2", "run-instances",
-		"--image-id", amiID,
-		"--instance-type", instanceType,
-		"--count", strconv.Itoa(1),
-		"--key-name", collector.KeyName,
-		"--security-group-ids", securityGroupID,
-		"--subnet-id", subnetID,
-		"--user-data", userDataEncoded,
-		"--region", region,
-		"--query", "Instances[0].NetworkInterfaces[0].Association.PublicIp",
-		"--output", "text")
+	launchOutput, err := awsCLI("ec2", "run-instances", "--image-id", amiID, "--instance-type", instanceType, "--count", "1", "--key-name", collector.KeyName, "--security-group-ids", securityGroupID, "--subnet-id", subnetID, "--user-data", userDataEncoded, "--region", region)
+
 	if err != nil {
 		fmt.Println("Error launching instances:", err)
 		panic(err)
 	}
-	publicIP := strings.TrimSpace(launchOutput)
-	fmt.Printf("Launched the Auditor with Public IP: %s\n", publicIP)
+	instanceIDs, err := extractInstanceIDsFromJSON(launchOutput)
+	if err != nil {
+		fmt.Println("Error extracting instance IDs:", err)
+		panic(err)
+	}
 
-	collector.RunningInstances = append(collector.RunningInstances, publicIP)
-	return publicIP
+	collector.RunningInstances = append(collector.RunningInstances, instanceIDs...)
+	instanceID := instanceIDs[0]
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			ip, err := getPublicIP(instanceID)
+			if err != nil {
+				fmt.Println("Error retrieving IP:", err)
+				continue
+			}
+			if ip != "" {
+				fmt.Println("Public IP found:", ip)
+				return ip
+			}
+			fmt.Println("Public IP not available yet, retrying...")
+		}
+	}
+
+}
+
+func getPublicIP(instanceID string) (string, error) {
+	cmd := exec.Command("aws", "ec2", "describe-instances", "--instance-ids", instanceID,
+		"--query", "Reservations[*].Instances[*].NetworkInterfaces[*].Association.PublicIp",
+		"--output", "text")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		return "", err
+	}
+
+	// Read the output and return the first non-empty line
+	scanner := bufio.NewScanner(&out)
+	for scanner.Scan() {
+		ip := strings.TrimSpace(scanner.Text())
+		if ip != "" {
+			return ip, nil
+		}
+	}
+	return "", fmt.Errorf("no public IP found")
 }
 
 func ExecuteCurrentTask(collector *Collector) error {

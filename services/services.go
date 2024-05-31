@@ -98,7 +98,7 @@ func SpawnClients(collector *Collector, client_count string, server_ip string, c
 	userDataEncoded := base64.StdEncoding.EncodeToString([]byte(client_script_user_data))
 	// Start EC2 instances
 	fmt.Println("Launching instances...")
-	launchOutput, err := awsCLI("ec2", "run-instances", "--image-id", amiID, "--instance-type", instanceType, "--count", count, "--key-name", collector.KeyName, "--security-group-ids", securityGroupID, "--subnet-id", "--user-data", userDataEncoded, subnetID, "--region", region)
+	launchOutput, err := awsCLI("ec2", "run-instances", "--image-id", amiID, "--instance-type", instanceType, "--count", count, "--key-name", collector.KeyName, "--security-group-ids", securityGroupID, "--subnet-id", subnetID, "--user-data", userDataEncoded, "--region", region)
 	if err != nil {
 		fmt.Println("Error launching instances:", err)
 		return err

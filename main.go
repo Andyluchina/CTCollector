@@ -74,7 +74,7 @@ func main() {
 	}
 	log.Printf("Serving RPC server on port " + port)
 	// starts up the current task
-	server_ip := "34.202.230.185:80"
+	server_ip := "54.160.201.64:80"
 	services.SpawnClients(Collector, "9", server_ip, Collector_ip+":80", 1)
 	services.SpawnClients(Collector, "1", server_ip, Collector_ip+":80", 0)
 	http.Serve(listener, nil)

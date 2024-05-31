@@ -87,8 +87,7 @@ func SpawnClients(collector *Collector, client_count string, server_ip string, c
 	client_script_user_data := fmt.Sprintf(`#!/bin/bash
 	sudo su
 	cd ~
-	wget https://go.dev/dl/go1.22.3.linux-amd64.tar.gz
-	rm -rf /usr/local/go && tar -C /usr/local -xzf go1.22.3.linux-amd64.tar.gz
+	yum install go -y
 	yum install git -y
 	git clone https://github.com/Andyluchina/CTClient
 	cd CTClient

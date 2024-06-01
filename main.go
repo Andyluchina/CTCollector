@@ -20,7 +20,8 @@ func main() {
 	run_tasks := []datastruct.RunTask{}
 	port := "80"
 	// create a run task
-	total_clients := []uint32{200, 180, 160, 140, 120, 100, 80, 60, 40, 20}
+	// total_clients := []uint32{200, 180, 160, 140, 120, 100, 80, 60, 40, 20}
+	total_clients := []uint32{120, 100, 80, 60, 40, 20}
 
 	for _, total_client := range total_clients {
 		run_task := datastruct.RunTask{

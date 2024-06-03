@@ -22,11 +22,11 @@ type AuditorReport struct {
 
 type AuditorClientCPUReport struct {
 	ID                   int
-	InitialReportingTime int
-	SecreteSharing       int
-	ShuffleTime          int
-	RevealTime           int
-	FaultToleranceTime   int
+	InitialReportingTime float64
+	SecreteSharing       float64
+	ShuffleTime          float64
+	RevealTime           float64
+	FaultToleranceTime   float64
 }
 
 type TestRun struct {

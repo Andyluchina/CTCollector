@@ -275,21 +275,21 @@ func ExecuteCurrentTask(collector *Collector) error {
 	fmt.Println(collector.RunTasks[collector.CurrentTask])
 	auditor_ip := SpawnAuditor(collector)
 
+	// Spawn Pinger
+	err := SpawnPinger(collector)
+
+	if err != nil {
+		panic(err)
+	}
 	time.Sleep(20 * time.Second)
 	total_clients := collector.RunTasks[collector.CurrentTask].TotalClients
 	sitout := collector.RunTasks[collector.CurrentTask].MaxSitOut
-	err := SpawnClients(collector, strconv.Itoa(int(total_clients-sitout)), auditor_ip, collector.CollectorIP, 1)
+	err = SpawnClients(collector, strconv.Itoa(int(total_clients-sitout)), auditor_ip, collector.CollectorIP, 1)
 	if err != nil {
 		panic(err)
 	}
+
 	err = SpawnClients(collector, strconv.Itoa(int(sitout)), auditor_ip, collector.CollectorIP, 0)
-	if err != nil {
-		panic(err)
-	}
-
-	// Spawn Pinger
-	err = SpawnPinger(collector)
-
 	if err != nil {
 		panic(err)
 	}

@@ -1,15 +1,23 @@
 package datastruct
 
 type ClientStats struct {
-	ClientID            int
-	InitalReportingTime float64
-	SecreteShareTime    float64
-	ShuffleTime         float64
-	RevealTime          float64
-	FTTime              float64
-	UploadBytes         int
-	DownloadBytes       int
-	Entry               []byte
+	ClientID                     int
+	InitalReportingTime          float64
+	SecreteShareTime             float64
+	ShuffleTime                  float64
+	RevealTime                   float64
+	FTTime                       float64
+	Entry                        []byte
+	UploadBytesInitalReporting   int
+	DownloadBytesInitalReporting int
+	UploadBytesSecreteShare      int
+	DownloadBytesSecreteShare    int
+	UploadBytesShuffle           int
+	DownloadBytesShuffle         int
+	UploadBytesReveal            int
+	DownloadBytesReveal          int
+	UploadBytesFT                int
+	DownloadBytesFT              int
 }
 
 type AuditorReport struct {

@@ -22,6 +22,7 @@ type Collector struct {
 	RunningInstances []string
 	KeyName          string
 	CollectorIP      string
+	AuditorIP        string
 	mu               sync.Mutex
 }
 
@@ -178,11 +179,64 @@ func SpawnAuditor(collector *Collector) string {
 			}
 			if ip != "" {
 				fmt.Println("Public IP found:", ip)
+				collector.AuditorIP = ip + ":80"
 				return ip + ":80"
 			}
 			fmt.Println("Public IP not available yet, retrying...")
 		}
 	}
+
+}
+
+func SpawnPinger(collector *Collector) error {
+	region := "us-east-1"
+	instanceType := "t2.nano"
+	securityGroupID := "sg-03c26d167c72f8254"
+
+	// Get the latest Amazon Linux 2 AMI ID using a custom function that wraps AWS CLI calls
+	amiID, err := awsCLI("ec2", "describe-images", "--owners", "amazon",
+		"--filters", "Name=name,Values=amzn2-ami-hvm-*-x86_64-gp2",
+		"Name=state,Values=available",
+		"--query", "Images | sort_by(@, &CreationDate) | [-1].ImageId",
+		"--output", "text", "--region", region)
+	if err != nil {
+		fmt.Println("Error getting AMI ID:", err)
+		panic(err)
+	}
+	amiID = strings.TrimSpace(amiID)
+
+	// Find the default subnet in the first available zone
+	subnetID, err := awsCLI("ec2", "describe-subnets", "--filters", "Name=default-for-az,Values=true",
+		"--query", "Subnets[0].SubnetId", "--output", "text", "--region", region)
+	if err != nil {
+		fmt.Println("Error getting subnet ID:", err)
+		panic(err)
+	}
+	subnetID = strings.TrimSpace(subnetID)
+
+	// Prepare user data script for the instances
+	userData := fmt.Sprintf(`#!/bin/bash
+	sudo yum install -y git
+	git clone https://github.com/Andyluchina/CTPinger
+	cd CTPinger
+	./main %s`, collector.AuditorIP)
+	userDataEncoded := base64.StdEncoding.EncodeToString([]byte(userData))
+
+	// Start EC2 instances
+	launchOutput, err := awsCLI("ec2", "run-instances", "--image-id", amiID, "--instance-type", instanceType, "--count", "1", "--key-name", collector.KeyName, "--security-group-ids", securityGroupID, "--subnet-id", subnetID, "--user-data", userDataEncoded, "--region", region)
+
+	if err != nil {
+		fmt.Println("Error launching instances:", err)
+		panic(err)
+	}
+	instanceIDs, err := extractInstanceIDsFromJSON(launchOutput)
+	if err != nil {
+		fmt.Println("Error extracting instance IDs:", err)
+		panic(err)
+	}
+
+	collector.RunningInstances = append(collector.RunningInstances, instanceIDs...)
+	return nil
 
 }
 
@@ -229,6 +283,13 @@ func ExecuteCurrentTask(collector *Collector) error {
 		panic(err)
 	}
 	err = SpawnClients(collector, strconv.Itoa(int(sitout)), auditor_ip, collector.CollectorIP, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	// Spawn Pinger
+	err = SpawnPinger(collector)
+
 	if err != nil {
 		panic(err)
 	}

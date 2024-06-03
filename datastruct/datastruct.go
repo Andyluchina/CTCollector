@@ -16,6 +16,17 @@ type AuditorReport struct {
 	TotalClients      uint32
 	MaxSitOut         uint32
 	CalculatedEntries [][][]byte
+	TotalRunTime      float64
+	PerClientCPU      []AuditorClientCPUReport
+}
+
+type AuditorClientCPUReport struct {
+	ID                   int
+	InitialReportingTime int
+	SecreteSharing       int
+	ShuffleTime          int
+	RevealTime           int
+	FaultToleranceTime   int
 }
 
 type TestRun struct {

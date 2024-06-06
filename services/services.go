@@ -119,7 +119,7 @@ func SpawnClients(collector *Collector, client_count string, server_ip string, c
 
 func SpawnAuditor(collector *Collector) string {
 	region := "us-east-1"
-	instanceType := "t2.medium"
+	instanceType := "t2.large"
 	securityGroupID := "sg-03c26d167c72f8254"
 
 	// Get the latest Amazon Linux 2 AMI ID using a custom function that wraps AWS CLI calls

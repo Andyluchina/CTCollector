@@ -94,7 +94,7 @@ func SpawnClients(collector *Collector, client_count string, server_ip string, c
 	yum install git -y
 	git clone https://github.com/Andyluchina/CTClient
 	cd CTClient
-	./main %s %s %s`, server_ip, strconv.Itoa(reveal), collector_ip)
+	./main %s %s %s > log.txt`, server_ip, strconv.Itoa(reveal), collector_ip)
 
 	userDataEncoded := base64.StdEncoding.EncodeToString([]byte(client_script_user_data))
 	// Start EC2 instances
@@ -148,7 +148,7 @@ func SpawnAuditor(collector *Collector) string {
 	sudo yum install -y git
 	git clone https://github.com/Andyluchina/CTAuditor
 	cd CTAuditor
-	./main %s %s %s %s %s`, strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].TotalClients)), strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].MaxSitOut)), "80", collector.CollectorIP, strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].Shuffler)))
+	./main %s %s %s %s %s > log.txt`, strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].TotalClients)), strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].MaxSitOut)), "80", collector.CollectorIP, strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].Shuffler)))
 	userDataEncoded := base64.StdEncoding.EncodeToString([]byte(userData))
 
 	// Start EC2 instances

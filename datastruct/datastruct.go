@@ -45,6 +45,7 @@ type TestRun struct {
 type RunTask struct {
 	TotalClients uint32
 	MaxSitOut    uint32
+	Shuffler     uint32
 }
 
 type ReportStatsReply struct {

@@ -366,6 +366,7 @@ func (collector *Collector) ReportStatsAuditor(req *datastruct.AuditorReport, re
 
 	if len(collector.RunStats[collector.CurrentTask].Clients) == int(collector.RunTasks[collector.CurrentTask].TotalClients) {
 		// write collected data to a file
+		collector.RunStats[collector.CurrentTask].Auditor.Shufflers = req.Shufflers
 		WriteRevealInfoToDatabase(collector.RunStats)
 		Cleanup(collector)
 

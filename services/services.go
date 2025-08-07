@@ -146,6 +146,8 @@ func SpawnAuditor(collector *Collector) string {
 	// Prepare user data script for the instances
 	userData := fmt.Sprintf(`#!/bin/bash
 	sudo yum install -y git
+	cd ~
+	sudo su
 	git clone https://github.com/Andyluchina/CTAuditor
 	cd CTAuditor
 	> nohup.txt && nohup ./main %s %s %s %s %s > nohup.txt 2>&1 &`, strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].TotalClients)), strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].MaxSitOut)), "80", collector.CollectorIP, strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].Shuffler)))

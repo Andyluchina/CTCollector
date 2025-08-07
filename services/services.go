@@ -148,7 +148,7 @@ func SpawnAuditor(collector *Collector) string {
 	sudo yum install -y git
 	git clone https://github.com/Andyluchina/CTAuditor
 	cd CTAuditor
-	> nohup.txt && nohup ./main %s %s %s %s %s > nohup.txt 2>&1 &`, strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].TotalClients)), strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].MaxSitOut)), "80", collector.CollectorIP, int(collector.RunTasks[collector.CurrentTask].Shuffler))
+	> nohup.txt && nohup ./main %s %s %s %s %s > nohup.txt 2>&1 &`, strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].TotalClients)), strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].MaxSitOut)), "80", collector.CollectorIP, strconv.Itoa(int(collector.RunTasks[collector.CurrentTask].Shuffler)))
 	userDataEncoded := base64.StdEncoding.EncodeToString([]byte(userData))
 
 	// Start EC2 instances

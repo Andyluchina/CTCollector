@@ -23,6 +23,7 @@ type ClientStats struct {
 type AuditorReport struct {
 	TotalClients      uint32
 	MaxSitOut         uint32
+	Shufflers         uint32
 	CalculatedEntries [][][]byte
 	TotalRunTime      float64
 	PerClientCPU      []AuditorClientCPUReport

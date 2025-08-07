@@ -146,7 +146,6 @@ func SpawnAuditor(collector *Collector) string {
 	// Prepare user data script for the instances
 	userData := fmt.Sprintf(`#!/bin/bash
 	sudo yum install -y git
-	cd ~
 	sudo su
 	git clone https://github.com/Andyluchina/CTAuditor
 	cd CTAuditor

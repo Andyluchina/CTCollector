@@ -94,7 +94,7 @@ func SpawnClients(collector *Collector, client_count string, server_ip string, c
 	yum install git -y
 	git clone https://github.com/Andyluchina/CTClient
 	cd CTClient
-	nohup ./main %s %s %s %s> nohup.txt 2>&1 &`, server_ip, strconv.Itoa(reveal), collector_ip, strconv.Itoa(shuffle_under_k_keys))
+	nohup ./main %s %s %s %s > nohup.txt 2>&1 &`, server_ip, strconv.Itoa(reveal), collector_ip, strconv.Itoa(shuffle_under_k_keys))
 
 	userDataEncoded := base64.StdEncoding.EncodeToString([]byte(client_script_user_data))
 	// Start EC2 instances

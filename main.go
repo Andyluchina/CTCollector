@@ -29,7 +29,7 @@ func main() {
 			run_task := datastruct.RunTask{
 				TotalClients:          total_client,
 				MaxSitOut:             uint32(float64(total_client) * sitout_percent),
-				Shuffler:              1,
+				Shuffler:              uint32(1),
 				Shuffler_under_k_keys: shuffler_keys,
 			}
 			run_tasks = append(run_tasks, run_task)

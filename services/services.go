@@ -165,7 +165,7 @@ func SpawnAuditor(collector *Collector) string {
 	userDataEncoded := base64.StdEncoding.EncodeToString([]byte(userData))
 
 	// Start EC2 instances
-	launchOutput, err := awsCLI("ec2", "run-instances", "--image-id", amiID, "--instance-type", instanceType, "--count", "1", "--key-name", collector.KeyName, "--security-group-ids", securityGroupID, "--subnet-id", subnetID, "--user-data", userDataEncoded, "--region", region)
+	launchOutput, err := awsCLI("ec2", "run-instances", "--image-id", amiID, "--instance-type", instanceType, "--count", "1", "--key-name", collector.KeyName, "--security-group-ids", securityGroupID, "--credit-specification", "CpuCredits=unlimited", "--subnet-id", subnetID, "--user-data", userDataEncoded, "--region", region)
 
 	if err != nil {
 		fmt.Println("Error launching instances:", err)
@@ -236,7 +236,7 @@ func SpawnPinger(collector *Collector) error {
 	userDataEncoded := base64.StdEncoding.EncodeToString([]byte(userData))
 
 	// Start EC2 instances
-	launchOutput, err := awsCLI("ec2", "run-instances", "--image-id", amiID, "--instance-type", instanceType, "--count", "1", "--key-name", collector.KeyName, "--security-group-ids", securityGroupID, "--subnet-id", subnetID, "--user-data", userDataEncoded, "--region", region)
+	launchOutput, err := awsCLI("ec2", "run-instances", "--image-id", amiID, "--instance-type", instanceType, "--count", "1", "--key-name", collector.KeyName, "--security-group-ids", securityGroupID, "--credit-specification", "CpuCredits=unlimited", "--subnet-id", subnetID, "--user-data", userDataEncoded, "--region", region)
 
 	if err != nil {
 		fmt.Println("Error launching instances:", err)

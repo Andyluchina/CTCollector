@@ -21,15 +21,16 @@ func main() {
 	port := "80"
 	// create a run task
 	total_clients := []uint32{20}
-	shufflers := []uint32{3}
+	shufflers_keys_set := []uint32{3}
 	// total_clients := []uint32{100, 80, 60, 40, 20}
 	sitout_percent := float64(0.1)
 	for _, total_client := range total_clients {
-		for _, shuffler := range shufflers {
+		for _, shuffler_keys := range shufflers_keys_set {
 			run_task := datastruct.RunTask{
-				TotalClients: total_client,
-				MaxSitOut:    uint32(float64(total_client) * sitout_percent),
-				Shuffler:     shuffler,
+				TotalClients:          total_client,
+				MaxSitOut:             uint32(float64(total_client) * sitout_percent),
+				Shuffler:              1,
+				Shuffler_under_k_keys: shuffler_keys,
 			}
 			run_tasks = append(run_tasks, run_task)
 		}

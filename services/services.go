@@ -59,7 +59,7 @@ func extractInstanceIDsFromJSON(jsonData string) ([]string, error) {
 	return ids, nil
 }
 
-func SpawnClients(collector *Collector, client_count string, server_ip string, collector_ip string, reveal int) error {
+func SpawnClients(collector *Collector, client_count string, server_ip string, collector_ip string, reveal int, shuffle_under_k_keys int) error {
 	region := "us-east-1"
 	instanceType := "t2.small"
 	securityGroupID := "sg-03c26d167c72f8254"
@@ -94,7 +94,7 @@ func SpawnClients(collector *Collector, client_count string, server_ip string, c
 	yum install git -y
 	git clone https://github.com/Andyluchina/CTClient
 	cd CTClient
-	nohup ./main %s %s %s > nohup.txt 2>&1 &`, server_ip, strconv.Itoa(reveal), collector_ip)
+	nohup ./main %s %s %s %s> nohup.txt 2>&1 &`, server_ip, strconv.Itoa(reveal), collector_ip, strconv.Itoa(shuffle_under_k_keys))
 
 	userDataEncoded := base64.StdEncoding.EncodeToString([]byte(client_script_user_data))
 	// Start EC2 instances
@@ -297,7 +297,8 @@ func ExecuteCurrentTask(collector *Collector) error {
 	time.Sleep(20 * time.Second)
 	total_clients := collector.RunTasks[collector.CurrentTask].TotalClients
 	sitout := collector.RunTasks[collector.CurrentTask].MaxSitOut
-	err = SpawnClients(collector, strconv.Itoa(int(total_clients-sitout)), auditor_ip, collector.CollectorIP, 1)
+	shuffle_under_k_keys := int(collector.RunTasks[collector.CurrentTask].Shuffler_under_k_keys)
+	err = SpawnClients(collector, strconv.Itoa(int(total_clients-sitout)), auditor_ip, collector.CollectorIP, 1, shuffle_under_k_keys)
 	if err != nil {
 		panic(err)
 	}
@@ -305,7 +306,7 @@ func ExecuteCurrentTask(collector *Collector) error {
 	if sitout == 0 {
 		return nil
 	}
-	err = SpawnClients(collector, strconv.Itoa(int(sitout)), auditor_ip, collector.CollectorIP, 0)
+	err = SpawnClients(collector, strconv.Itoa(int(sitout)), auditor_ip, collector.CollectorIP, 0, shuffle_under_k_keys)
 	if err != nil {
 		panic(err)
 	}

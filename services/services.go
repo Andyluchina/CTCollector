@@ -290,6 +290,9 @@ func ExecuteCurrentTask(collector *Collector) error {
 		panic(err)
 	}
 
+	if sitout == 0 {
+		return nil
+	}
 	err = SpawnClients(collector, strconv.Itoa(int(sitout)), auditor_ip, collector.CollectorIP, 0)
 	if err != nil {
 		panic(err)

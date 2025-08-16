@@ -352,6 +352,7 @@ func (collector *Collector) ReportStatsClient(req *datastruct.ClientStats, reply
 	if len(collector.RunStats[collector.CurrentTask].Clients) == int(collector.RunTasks[collector.CurrentTask].TotalClients) && collector.RunStats[collector.CurrentTask].Auditor.TotalClients != 0 {
 		// write collected data to a file
 		collector.RunStats[collector.CurrentTask].Auditor.Shufflers = collector.RunTasks[collector.CurrentTask].Shuffler
+		collector.RunStats[collector.CurrentTask].Auditor.ShufflerUnderKKeys = collector.RunTasks[collector.CurrentTask].Shuffler_under_k_keys
 		fmt.Println("Logging shufflers:", collector.RunTasks[collector.CurrentTask].Shuffler)
 		WriteRevealInfoToDatabase(collector.RunStats)
 		Cleanup(collector)
@@ -384,6 +385,7 @@ func (collector *Collector) ReportStatsAuditor(req *datastruct.AuditorReport, re
 	if len(collector.RunStats[collector.CurrentTask].Clients) == int(collector.RunTasks[collector.CurrentTask].TotalClients) {
 		// write collected data to a file
 		collector.RunStats[collector.CurrentTask].Auditor.Shufflers = collector.RunTasks[collector.CurrentTask].Shuffler
+		collector.RunStats[collector.CurrentTask].Auditor.ShufflerUnderKKeys = collector.RunTasks[collector.CurrentTask].Shuffler_under_k_keys
 		fmt.Println("Logging shufflers:", collector.RunTasks[collector.CurrentTask].Shuffler)
 		WriteRevealInfoToDatabase(collector.RunStats)
 		Cleanup(collector)

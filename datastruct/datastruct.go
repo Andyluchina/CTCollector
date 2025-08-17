@@ -18,6 +18,7 @@ type ClientStats struct {
 	DownloadBytesReveal          int
 	UploadBytesFT                int
 	DownloadBytesFT              int
+	AuditorZKCheckTime           float64
 }
 
 type AuditorReport struct {
